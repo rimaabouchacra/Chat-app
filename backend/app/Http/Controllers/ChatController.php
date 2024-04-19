@@ -12,14 +12,38 @@ class ChatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    // public function index()
+    // {
+    //     // Retrieve all chats where the authenticated user is either the sender or receiver
+    //     $chats = Chat::where('sender_id', auth()->id())
+    //                  ->orWhere('receiver_id', auth()->id())
+    //                  ->get();
+
+    //     return response()->json($chats);
+    // }
+
     public function index()
     {
         // Retrieve all chats where the authenticated user is either the sender or receiver
-        $chats = Chat::where('sender_id', auth()->id())
+        $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+                     ->where('sender_id', auth()->id())
                      ->orWhere('receiver_id', auth()->id())
                      ->get();
 
-        return response()->json($chats);
+        // Transform chat objects to include sender and receiver IDs and names
+        $formattedChats = $chats->map(function ($chat) {
+            return [
+                'id' => $chat->id,
+                'sender_id' => $chat->sender->id,
+                'sender_name' => $chat->sender->name,
+                'receiver_id' => $chat->receiver->id,
+                'receiver_name' => $chat->receiver->name,
+                'created_at' => $chat->created_at,
+                'updated_at' => $chat->updated_at,
+            ];
+        });
+
+        return response()->json($formattedChats);
     }
 
     /**

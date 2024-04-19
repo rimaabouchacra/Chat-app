@@ -29,6 +29,17 @@ Route::group(['prefix' => 'v1'], function(){
 
     });
 
+    Route::controller(ChatController::class)->group(function () {
+           Route::get('/chats', 'index');
+           Route::post('/chats', 'store');
+           Route::get('/chats/{chat}', 'show');
+    });
+
+
+
+    // Get a specific chat by its ID
+
+
 
     // Route::group(['middleware' => ['auth:api', 'admin']], function() {
     //    Route::get('/users', [AuthController::class, "getUsers"]);
