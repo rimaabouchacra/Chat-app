@@ -43,16 +43,6 @@ Route::group(['prefix' => 'v1'], function(){
     });
 
 
-
-    // Get a specific chat by its ID
-
-
-
-    // Route::group(['middleware' => ['auth:api', 'admin']], function() {
-    //    Route::get('/users', [AuthController::class, "getUsers"]);
-    // });
-
-
 });
 
 
