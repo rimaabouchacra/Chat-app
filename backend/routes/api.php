@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MessageController;
 
 
 Route::group(['prefix' => 'v1'], function(){
@@ -30,9 +31,15 @@ Route::group(['prefix' => 'v1'], function(){
     });
 
     Route::controller(ChatController::class)->group(function () {
-           Route::get('/chats', 'index');
+           Route::get('/chats', 'getChats');
            Route::post('/chats', 'store');
            Route::get('/chats/{chat}', 'show');
+    });
+
+     Route::controller(MessageController::class)->group(function () {
+           Route::get('/messages', 'getMessages');
+           Route::post('/messages', 'sendMessage');
+           Route::get('/messages/{message}', 'showMessage');
     });
 
 

@@ -22,15 +22,13 @@ class ChatController extends Controller
     //     return response()->json($chats);
     // }
 
-    public function index()
+    public function getChats()
     {
-        // Retrieve all chats where the authenticated user is either the sender or receiver
         $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
                      ->where('sender_id', auth()->id())
                      ->orWhere('receiver_id', auth()->id())
                      ->get();
 
-        // Transform chat objects to include sender and receiver IDs and names
         $formattedChats = $chats->map(function ($chat) {
             return [
                 'id' => $chat->id,
