@@ -21,10 +21,10 @@ class CreateMessagesTable extends Migration
             $table->text('message');
             $table->timestamps();
 
-            // Foreign key constraints
+            // Define foreign key constraints
             $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
-            $table->foreign('sender_id')->references('sender_id')->on('chats')->onDelete('cascade');
-            $table->foreign('receiver_id')->references('receiver_id')->on('chats')->onDelete('cascade');
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('receiver_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

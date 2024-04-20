@@ -12,15 +12,6 @@ class ChatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    // public function index()
-    // {
-    //     // Retrieve all chats where the authenticated user is either the sender or receiver
-    //     $chats = Chat::where('sender_id', auth()->id())
-    //                  ->orWhere('receiver_id', auth()->id())
-    //                  ->get();
-
-    //     return response()->json($chats);
-    // }
 
     // public function getChats()
     // {
@@ -111,4 +102,5 @@ class ChatController extends Controller
         return response()->json($chat);
     }
 }
+
 

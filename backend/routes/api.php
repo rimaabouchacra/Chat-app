@@ -41,6 +41,8 @@ Route::group(['prefix' => 'v1'], function(){
            Route::get('/message/{chat_id}', 'getMessagesChat');
            Route::post('/messages', 'sendMessage');
            Route::get('/messages/{message}', 'showMessage');
+           Route::post('/messages/reply', 'replyToMessage');
+
     });
 
 
