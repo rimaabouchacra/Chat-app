@@ -22,27 +22,55 @@ class ChatController extends Controller
     //     return response()->json($chats);
     // }
 
+    // public function getChats()
+    // {
+    //     $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+    //                  ->where('sender_id', auth()->id())
+    //                  ->orWhere('receiver_id', auth()->id())
+    //                  ->get();
+
+    //     $formattedChats = $chats->map(function ($chat) {
+    //         return [
+    //             'id' => $chat->id,
+    //             'sender_id' => $chat->sender->id,
+    //             'sender_name' => $chat->sender->name,
+    //             'receiver_id' => $chat->receiver->id,
+    //             'receiver_name' => $chat->receiver->name,
+    //             'created_at' => $chat->created_at,
+    //             'updated_at' => $chat->updated_at,
+    //         ];
+    //     });
+
+    //     return response()->json($formattedChats);
+    // }
+
     public function getChats()
-    {
-        $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
-                     ->where('sender_id', auth()->id())
-                     ->orWhere('receiver_id', auth()->id())
-                     ->get();
+{
+    $userId = auth()->id();
 
-        $formattedChats = $chats->map(function ($chat) {
-            return [
-                'id' => $chat->id,
-                'sender_id' => $chat->sender->id,
-                'sender_name' => $chat->sender->name,
-                'receiver_id' => $chat->receiver->id,
-                'receiver_name' => $chat->receiver->name,
-                'created_at' => $chat->created_at,
-                'updated_at' => $chat->updated_at,
-            ];
-        });
+    $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+                 ->where(function ($query) use ($userId) {
+                     $query->where('sender_id', $userId)
+                           ->orWhere('receiver_id', $userId);
+                 })
+                 ->get();
 
-        return response()->json($formattedChats);
-    }
+    $formattedChats = $chats->map(function ($chat) use ($userId) {
+        $SenderUserId = ($chat->sender_id === $userId) ? $chat->receiver_id : $chat->sender_id;
+        $SenderName = ($chat->sender_id === $userId) ? $chat->receiver->name : $chat->sender->name;
+
+        return [
+            'id' => $chat->id,
+            'sender_id' => $SenderUserId,
+            'sender_name' => $SenderName,
+            'created_at' => $chat->created_at,
+            'updated_at' => $chat->updated_at,
+        ];
+    });
+
+    return response()->json($formattedChats);
+}
+
 
     /**
      * Store a new chat.
