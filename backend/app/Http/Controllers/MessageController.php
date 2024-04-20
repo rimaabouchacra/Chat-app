@@ -27,6 +27,24 @@ class MessageController extends Controller
       return response()->json($messages);
     }
 
+   public function getMessagesChat($chat_id)
+{
+    try {
+        // Retrieve the Chat instance based on the chat_id
+        $chat = Chat::findOrFail($chat_id);
+
+        // Use the retrieved Chat instance to fetch messages for the specified chat
+        $messages = Message::select('messages.*', 'users.name as sender_name')
+            ->join('users', 'messages.sender_id', '=', 'users.id')
+            ->where('messages.chat_id', $chat->id)
+            ->get();
+
+        return response()->json($messages);
+    } catch (ModelNotFoundException $exception) {
+        return response()->json(['error' => 'Chat not found'], 404);
+    }
+}
+
     /**
      * Create a new message.
      *

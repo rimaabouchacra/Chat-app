@@ -38,6 +38,7 @@ Route::group(['prefix' => 'v1'], function(){
 
      Route::controller(MessageController::class)->group(function () {
            Route::get('/messages', 'getMessages');
+           Route::get('/message/{chat_id}', 'getMessagesChat');
            Route::post('/messages', 'sendMessage');
            Route::get('/messages/{message}', 'showMessage');
     });
