@@ -91,6 +91,52 @@ public function getChats()
     return response()->json($chatsWithAllMessages);
 }
 
+// public function getChatsLastMessage()
+// {
+//     $userId = auth()->id();
+
+//     $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+//                  ->where(function ($query) use ($userId) {
+//                      $query->where('sender_id', $userId)
+//                            ->orWhere('receiver_id', $userId);
+//                  })
+//                  ->get();
+
+//     $chatsWithLastMessage = $chats->map(function ($chat) use ($userId) {
+//         $lastMessage = $chat->messages()->latest()->first();
+
+//         $messageCount = $chat->messages()->where('receiver_id', $userId)->count();
+
+//         if ($lastMessage) {
+//             return [
+//                 'id' => $chat->id,
+//                 'sender_id' => $chat->sender->id,
+//                 'sender_name' => $chat->sender->name,
+//                 'receiver_id' => $chat->receiver->id,
+//                 'receiver_name' => $chat->receiver->name,
+//                 'last_message' => $lastMessage->message,
+//                 'message_count' => $messageCount,
+//                 'created_at' => $chat->created_at,
+//                 'updated_at' => $chat->updated_at,
+//             ];
+//         } else {
+//             return [
+//                 'id' => $chat->id,
+//                 'sender_id' => $chat->sender->id,
+//                 'sender_name' => $chat->sender->name,
+//                 'receiver_id' => $chat->receiver->id,
+//                 'receiver_name' => $chat->receiver->name,
+//                 'last_message' => null,
+//                 'message_count' => $messageCount,
+//                 'created_at' => $chat->created_at,
+//                 'updated_at' => $chat->updated_at,
+//             ];
+//         }
+//     });
+
+//     return response()->json($chatsWithLastMessage);
+// }
+
 public function getChatsLastMessage()
 {
     $userId = auth()->id();
@@ -102,15 +148,23 @@ public function getChatsLastMessage()
                  })
                  ->get();
 
-    $chatsWithLastMessage = $chats->map(function ($chat) {
+    $chatsWithLastMessage = $chats->map(function ($chat) use ($userId) {
         $lastMessage = $chat->messages()->latest()->first();
-        $messageCount = $chat->messages()->count();
+
+        // Determine whether the current user is the sender or receiver in this chat
+        if ($chat->sender_id == $userId) {
+            $participant = $chat->receiver;
+        } else {
+            $participant = $chat->sender;
+        }
+
+        $messageCount = $chat->messages()->where('receiver_id', $userId)->count();
 
         if ($lastMessage) {
             return [
                 'id' => $chat->id,
-                'sender_id' => $chat->sender->id,
-                'sender_name' => $chat->sender->name,
+                'sender_id' => $participant->id,
+                'sender_name' => $participant->name,
                 'receiver_id' => $chat->receiver->id,
                 'receiver_name' => $chat->receiver->name,
                 'last_message' => $lastMessage->message,
@@ -121,11 +175,11 @@ public function getChatsLastMessage()
         } else {
             return [
                 'id' => $chat->id,
-                'sender_id' => $chat->sender->id,
-                'sender_name' => $chat->sender->name,
+                'sender_id' => $participant->id,
+                'sender_name' => $participant->name,
                 'receiver_id' => $chat->receiver->id,
                 'receiver_name' => $chat->receiver->name,
-                'last_message' => null, 
+                'last_message' => null,
                 'message_count' => $messageCount,
                 'created_at' => $chat->created_at,
                 'updated_at' => $chat->updated_at,
@@ -175,6 +229,8 @@ public function getChatsLastMessage()
         // Return the chat details
         return response()->json($chat);
     }
+
+
 }
 
 

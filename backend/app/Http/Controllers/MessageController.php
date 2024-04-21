@@ -99,7 +99,6 @@ public function sendMessage(Request $request)
 }
 
 
-
     /**
      * Retrieve a specific message.
      *
