@@ -31,10 +31,8 @@ class MessageController extends Controller
    public function getMessagesChat($chat_id)
    {
       try {
-          // Retrieve the Chat instance based on the chat_id
           $chat = Chat::findOrFail($chat_id);
 
-          // Use the retrieved Chat instance to fetch messages for the specified chat
           $messages = Message::select('messages.*', 'users.name as sender_name')
               ->join('users', 'messages.sender_id', '=', 'users.id')
               ->where('messages.chat_id', $chat->id)
@@ -61,26 +59,18 @@ public function sendMessage(Request $request)
         'message' => 'required|string',
     ]);
 
-    // Get the authenticated user as the sender
     $sender_id = auth()->id();
-
-    // Retrieve the chat instance
     $chat = Chat::findOrFail($request->chat_id);
-
-    // Determine the receiver ID based on the chat's participants
     $receiver_id = ($sender_id === $chat->sender_id) ? $chat->receiver_id : $chat->sender_id;
 
-    // Update the chat table to ensure the authenticated user is the sender
     $chat->update([
         'sender_id' => $sender_id,
         'receiver_id' => $receiver_id,
     ]);
 
-    // Retrieve sender and receiver names
     $sender_name = User::findOrFail($sender_id)->name;
     $receiver_name = User::findOrFail($receiver_id)->name;
 
-    // Create the message
     $message = Message::create([
         'chat_id' => $request->chat_id,
         'sender_id' => $sender_id,
@@ -88,7 +78,6 @@ public function sendMessage(Request $request)
         'message' => $request->message,
     ]);
 
-    // Return the response with sender and receiver names
     return response()->json([
         'sender_id' => $sender_id,
         'sender_name' => $sender_name,
