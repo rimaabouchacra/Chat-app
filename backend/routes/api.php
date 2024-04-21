@@ -26,12 +26,11 @@ Route::group(['prefix' => 'v1'], function(){
            Route::get('/logout', 'logout');
         });
 
-
-
     });
 
     Route::controller(ChatController::class)->group(function () {
            Route::get('/chats', 'getChats');
+           Route::get('/chats/last', 'getChatsLastMessage');
            Route::post('/chats', 'store');
            Route::get('/chats/{chat}', 'show');
     });

@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -35,7 +36,34 @@ class ChatController extends Controller
     //     return response()->json($formattedChats);
     // }
 
-    public function getChats()
+//     public function getChats()
+// {
+//     $userId = auth()->id();
+
+//     $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+//                  ->where(function ($query) use ($userId) {
+//                      $query->where('sender_id', $userId)
+//                            ->orWhere('receiver_id', $userId);
+//                  })
+//                  ->get();
+
+//     $formattedChats = $chats->map(function ($chat) use ($userId) {
+//         $SenderUserId = ($chat->sender_id === $userId) ? $chat->receiver_id : $chat->sender_id;
+//         $SenderName = ($chat->sender_id === $userId) ? $chat->receiver->name : $chat->sender->name;
+
+//         return [
+//             'id' => $chat->id,
+//             'sender_id' => $SenderUserId,
+//             'sender_name' => $SenderName,
+//             'created_at' => $chat->created_at,
+//             'updated_at' => $chat->updated_at,
+//         ];
+//     });
+
+//     return response()->json($formattedChats);
+// }
+
+public function getChats()
 {
     $userId = auth()->id();
 
@@ -46,22 +74,65 @@ class ChatController extends Controller
                  })
                  ->get();
 
-    $formattedChats = $chats->map(function ($chat) use ($userId) {
-        $SenderUserId = ($chat->sender_id === $userId) ? $chat->receiver_id : $chat->sender_id;
-        $SenderName = ($chat->sender_id === $userId) ? $chat->receiver->name : $chat->sender->name;
-
+    $chatsWithAllMessages = $chats->map(function ($chat) {
+        $messages = $chat->messages()->orderBy('created_at', 'asc')->pluck('message');
         return [
             'id' => $chat->id,
-            'sender_id' => $SenderUserId,
-            'sender_name' => $SenderName,
+            'sender_id' => $chat->sender->id,
+            'sender_name' => $chat->sender->name,
+            'receiver_id' => $chat->receiver->id,
+            'receiver_name' => $chat->receiver->name,
+            'messages' => $messages,
             'created_at' => $chat->created_at,
             'updated_at' => $chat->updated_at,
         ];
     });
 
-    return response()->json($formattedChats);
+    return response()->json($chatsWithAllMessages);
 }
 
+public function getChatsLastMessage()
+{
+    $userId = auth()->id();
+
+    $chats = Chat::with(['sender:id,name', 'receiver:id,name'])
+                 ->where(function ($query) use ($userId) {
+                     $query->where('sender_id', $userId)
+                           ->orWhere('receiver_id', $userId);
+                 })
+                 ->get();
+
+    // Fetch the last message for each chat
+    $chatsWithLastMessage = $chats->map(function ($chat) {
+        $lastMessage = $chat->messages()->latest()->first(); // Get the latest message for the chat
+
+        if ($lastMessage) {
+            return [
+                'id' => $chat->id,
+                'sender_id' => $chat->sender->id,
+                'sender_name' => $chat->sender->name,
+                'receiver_id' => $chat->receiver->id,
+                'receiver_name' => $chat->receiver->name,
+                'last_message' => $lastMessage->message,
+                'created_at' => $chat->created_at,
+                'updated_at' => $chat->updated_at,
+            ];
+        } else {
+            return [
+                'id' => $chat->id,
+                'sender_id' => $chat->sender->id,
+                'sender_name' => $chat->sender->name,
+                'receiver_id' => $chat->receiver->id,
+                'receiver_name' => $chat->receiver->name,
+                'last_message' => null, // No message found
+                'created_at' => $chat->created_at,
+                'updated_at' => $chat->updated_at,
+            ];
+        }
+    });
+
+    return response()->json($chatsWithLastMessage);
+}
 
     /**
      * Store a new chat.
