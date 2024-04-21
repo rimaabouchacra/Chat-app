@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
 
 use App\Models\Message;
 use App\Models\Chat;
@@ -52,30 +53,8 @@ class MessageController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    // public function sendMessage(Request $request)
-    // {
-    //   $request->validate([
-    //       'chat_id' => 'required|exists:chats,id',
-    //       'message' => 'required|string',
-    //   ]);
 
-
-    //   $chat = Chat::findOrFail($request->chat_id);
-    //   $sender_id = $chat->sender_id;
-    //   $receiver_id = $chat->receiver_id;
-
-    //   // Create the message
-    //   $message = Message::create([
-    //       'chat_id' => $request->chat_id,
-    //       'sender_id' => $sender_id,
-    //       'receiver_id' => $receiver_id,
-    //       'message' => $request->message,
-    //   ]);
-
-    //    return response()->json($message, 201);
-    // }
-
-  public function sendMessage(Request $request)
+public function sendMessage(Request $request)
 {
     $request->validate([
         'chat_id' => 'required|exists:chats,id',
@@ -85,9 +64,21 @@ class MessageController extends Controller
     // Get the authenticated user as the sender
     $sender_id = auth()->id();
 
-    // Determine the receiver ID based on the chat's participants
+    // Retrieve the chat instance
     $chat = Chat::findOrFail($request->chat_id);
+
+    // Determine the receiver ID based on the chat's participants
     $receiver_id = ($sender_id === $chat->sender_id) ? $chat->receiver_id : $chat->sender_id;
+
+    // Update the chat table to ensure the authenticated user is the sender
+    $chat->update([
+        'sender_id' => $sender_id,
+        'receiver_id' => $receiver_id,
+    ]);
+
+    // Retrieve sender and receiver names
+    $sender_name = User::findOrFail($sender_id)->name;
+    $receiver_name = User::findOrFail($receiver_id)->name;
 
     // Create the message
     $message = Message::create([
@@ -97,9 +88,15 @@ class MessageController extends Controller
         'message' => $request->message,
     ]);
 
-    return response()->json($message, 201);
+    // Return the response with sender and receiver names
+    return response()->json([
+        'sender_id' => $sender_id,
+        'sender_name' => $sender_name,
+        'receiver_id' => $receiver_id,
+        'receiver_name' => $receiver_name,
+        'message' => $request->message,
+    ], 201);
 }
-
 
 
 

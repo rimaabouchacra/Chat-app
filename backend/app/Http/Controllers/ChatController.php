@@ -102,9 +102,9 @@ public function getChatsLastMessage()
                  })
                  ->get();
 
-    // Fetch the last message for each chat
     $chatsWithLastMessage = $chats->map(function ($chat) {
-        $lastMessage = $chat->messages()->latest()->first(); // Get the latest message for the chat
+        $lastMessage = $chat->messages()->latest()->first();
+        $messageCount = $chat->messages()->count();
 
         if ($lastMessage) {
             return [
@@ -114,6 +114,7 @@ public function getChatsLastMessage()
                 'receiver_id' => $chat->receiver->id,
                 'receiver_name' => $chat->receiver->name,
                 'last_message' => $lastMessage->message,
+                'message_count' => $messageCount,
                 'created_at' => $chat->created_at,
                 'updated_at' => $chat->updated_at,
             ];
@@ -124,7 +125,8 @@ public function getChatsLastMessage()
                 'sender_name' => $chat->sender->name,
                 'receiver_id' => $chat->receiver->id,
                 'receiver_name' => $chat->receiver->name,
-                'last_message' => null, // No message found
+                'last_message' => null, 
+                'message_count' => $messageCount,
                 'created_at' => $chat->created_at,
                 'updated_at' => $chat->updated_at,
             ];
@@ -133,6 +135,7 @@ public function getChatsLastMessage()
 
     return response()->json($chatsWithLastMessage);
 }
+
 
     /**
      * Store a new chat.
